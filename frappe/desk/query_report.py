@@ -394,14 +394,14 @@ def handle_duration_fieldtype_values(result, columns):
 	return result
 
 
-def build_xlsx_data(columns, data, visible_idx, include_indentation):
+def build_xlsx_data(columns, data, visible_idx, include_indentation, ignore_visible_idx=False):
 	result = [[]]
 	column_widths = []
 
 	for column in data.columns:
 		if column.get("hidden"):
 			continue
-		result[0].append(column["label"])
+		result[0].append(column.get("label"))
 		column_width = cint(column.get('width', 0))
 		# to convert into scale accepted by openpyxl
 		column_width /= 10
@@ -410,7 +410,7 @@ def build_xlsx_data(columns, data, visible_idx, include_indentation):
 	# build table from result
 	for row_idx, row in enumerate(data.result):
 		# only pick up rows that are visible in the report
-		if row_idx in visible_idx:
+		if ignore_visible_idx or row_idx in visible_idx:
 			row_data = []
 			if isinstance(row, dict):
 				for col_idx, column in enumerate(data.columns):

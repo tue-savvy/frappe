@@ -94,7 +94,7 @@ frappe.ui.form.ControlTextEditor = frappe.ui.form.ControlCode.extend({
 		}, 300));
 
 		$(this.quill.root).on('keydown', (e) => {
-			const key = frappe.ui.keys.get_key(e);
+			const key = frappe.ui.keys && frappe.ui.keys.get_key(e);
 			if (['ctrl+b', 'meta+b'].includes(key)) {
 				e.stopPropagation();
 			}
@@ -160,8 +160,11 @@ frappe.ui.form.ControlTextEditor = frappe.ui.form.ControlCode.extend({
 			['bold', 'italic', 'underline', 'clean'],
 			[{ 'color': [] }, { 'background': [] }],
 			['blockquote', 'code-block'],
+			// Adding Direction tool to give the user the ability to change text direction.
+			[{ 'direction': "rtl" }],
 			['link', 'image'],
 			[{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }],
+			[{ 'align': [] }],
 			[{ 'indent': '-1'}, { 'indent': '+1' }],
 			[{'table': [
 				'insert-table',
