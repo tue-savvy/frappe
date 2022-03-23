@@ -28,7 +28,8 @@ Object.defineProperty(Object.prototype, "setDefault", {
 	value: function(key, default_value) {
 		if (!(key in this)) this[key] = default_value;
 		return this[key];
-	}
+	},
+	writable: true
 });
 
 // Pluralize
@@ -945,17 +946,24 @@ Object.assign(frappe.utils, {
 		return decoded;
 	},
 	copy_to_clipboard(string) {
-		let input = $("<input>");
-		$("body").append(input);
-		input.val(string).select();
+		const show_success_alert = () => {
+			frappe.show_alert({
+				indicator: 'green',
+				message: __('Copied to clipboard.')
+			});
+		};
+		if (navigator.clipboard && window.isSecureContext) {
+			navigator.clipboard.writeText(string).then(show_success_alert);
+		} else {
+			let input = $("<textarea>");
+			$("body").append(input);
+			input.val(string).select();
 
-		document.execCommand("copy");
-		input.remove();
+			document.execCommand("copy");
+			show_success_alert();
+			input.remove();
+		}
 
-		frappe.show_alert({
-			indicator: 'green',
-			message: __('Copied to clipboard.')
-		});
 	},
 	is_rtl(lang=null) {
 		return ["ar", "he", "fa", "ps"].includes(lang || frappe.boot.lang);
@@ -1340,5 +1348,12 @@ Object.assign(frappe.utils, {
 		let e = clipboard_paste_event;
 		let clipboard_data = e.clipboardData || window.clipboardData || e.originalEvent.clipboardData;
 		return clipboard_data.getData('Text');
+	},
+
+	parse_array(array) {
+		if (array && array.length !== 0) {
+			return array;
+		}
+		return undefined;
 	}
 });

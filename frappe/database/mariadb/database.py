@@ -51,7 +51,8 @@ class MariaDBDatabase(Database):
 			'Color':		('varchar', self.VARCHAR_LEN),
 			'Barcode':		('longtext', ''),
 			'Geolocation':	('longtext', ''),
-			'Duration':		('decimal', '21,9')
+			'Duration':		('decimal', '21,9'),
+			'Icon':			('varchar', self.VARCHAR_LEN)
 		}
 
 	def get_connection(self):
@@ -152,6 +153,10 @@ class MariaDBDatabase(Database):
 		return e.args[0] == ER.NO_SUCH_TABLE
 
 	@staticmethod
+	def is_missing_table(e):
+		return MariaDBDatabase.is_table_missing(e)
+
+	@staticmethod
 	def is_missing_column(e):
 		return e.args[0] == ER.BAD_FIELD_ERROR
 
@@ -243,9 +248,16 @@ class MariaDBDatabase(Database):
 			column_name as 'name',
 			column_type as 'type',
 			column_default as 'default',
-			column_key = 'MUL' as 'index',
+			COALESCE(
+				(select 1
+				from information_schema.statistics
+				where table_name="{table_name}"
+					and column_name=columns.column_name
+					and NON_UNIQUE=1
+					limit 1
+			), 0) as 'index',
 			column_key = 'UNI' as 'unique'
-			from information_schema.columns
+			from information_schema.columns as columns
 			where table_name = '{table_name}' '''.format(table_name=table_name), as_dict=1)
 
 	def has_index(self, table_name, index_name):
